@@ -1,0 +1,71 @@
+# Defines the StatefulSet for the Alfresco Search (Solr) App
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "alfresco-search.fullName" . }}-solr
+  labels:
+    app: {{ template "alfresco-search.fullName" . }}-solr
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: search
+spec:
+  serviceName: {{ template "alfresco-search.fullName" . }}-solr
+  replicas: {{ .Values.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: {{ template "alfresco-search.fullName" . }}-solr
+  template:
+    metadata:
+      labels:
+        app: {{ template "alfresco-search.fullName" . }}-solr
+        release: {{ .Release.Name }}
+    spec:
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      {{- if .Values.registryPullSecrets }}
+      # only set this secret if a private docker registry variable is defined
+      imagePullSecrets:
+        - name: {{ .Values.registryPullSecrets }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ template "alfresco-search.dockerImage" . }}
+          imagePullPolicy: {{ template "alfresco-search.pullPolicy" . }}
+          envFrom:
+          - configMapRef:
+              name: {{ template "alfresco-search.fullName" . }}-solr-configmap
+          ports:
+            - containerPort: {{ template "alfresco-search.internalPort" . }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.persistence.search.data.mountPath }}
+            subPath: {{ .Values.persistence.search.data.subPath }}
+      initContainers:
+        - name: init-db
+          image: busybox
+          # command to allow solr to write to EFS volume. Details: https://issues.alfresco.com/jira/browse/DEPLOY-419
+          command: ["sh", "-c", "chown -R 1000:1000 {{ .Values.persistence.search.data.mountPath }}"]
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.persistence.search.data.mountPath }}
+            subPath: {{ .Values.persistence.search.data.subPath }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.persistence.storageClassName }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.VolumeSizeRequest }}

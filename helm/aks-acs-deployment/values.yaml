@@ -1,0 +1,59 @@
+# Default values for aks-acs-deployment.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+acs:
+  registryPullSecrets: alfresco-quayio-secret-credentials
+  repository:
+    replicaCount: 2
+  alfresco-infrastructure:
+    persistence:
+      enabled: false
+  transformrouter:
+    replicaCount: 2
+  pdfrenderer:
+    replicaCount: 2
+  imagemagick:
+    replicaCount: 2
+  libreoffice:
+    replicaCount: 2
+  tika:
+    replicaCount: 2
+  filestore:
+    replicaCount: 2
+  share:
+    replicaCount: 1
+  alfresco-search:
+    service:
+      externalPort: 80
+  postgresql:
+    replicaCount: 1
+    persistence:
+      existingClaim: ""
+      subPath: "alfresco-content-services/database-data"
+
+# Setting alfresco-search.enabled=false to disable the 
+# search dependency of alfresco-content-services so that 
+# the alfresco-search subchart in this chart will take precedence
+alfresco-search:
+  enabled: false
+  ingress:
+    enabled: true
+
+alfresco-digital-workspace:
+  enabled: false
+
+persistence:
+  reclaimPolicy: "Recycle"
+ingress:
+  enabled: false
+
+azurepvc:
+  infra:
+    baseSize: 20Gi
+    secretName: "azure-storage-account-secret"
+    shareName: "k8testshare"
+
