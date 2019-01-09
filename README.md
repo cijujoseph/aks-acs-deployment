@@ -1,1 +1,2 @@
 # aks-acs-deployment
+A parent chart to deploy ACS to AKS using alfresco-content-services chart and its dependencies except for alfresco-search-deployment where I'm using a custom subchart which is under helm/aks-acs-deployment/charts/alfresco-search
