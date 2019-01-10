@@ -10,7 +10,7 @@ metadata:
     heritage: {{ .Release.Service }}
     component: search
 spec:
-  serviceName: {{ template "alfresco-search.fullName" . }}-solr
+  serviceName: {{ template "alfresco-search.fullName" . }}-solr-headless
   replicas: {{ .Values.replicaCount }}
   updateStrategy:
     type: RollingUpdate

@@ -38,10 +38,15 @@ acs:
 # Setting alfresco-search.enabled=false to disable the 
 # search dependency of alfresco-content-services so that 
 # the alfresco-search subchart in this chart will take precedence
+# To disable the OOTB search dependency
 alfresco-search:
+  replicaCount: 2
   enabled: false
   ingress:
     enabled: true
+  repository:
+    host: alfresco-cs
+    port: 80
 
 alfresco-digital-workspace:
   enabled: false
